@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Simple MP3 Player</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.0/jsmediatags.min.js"></script>
+	<!-- <link rel="stylesheet" href="player.css"> -->
+	<style>
+		#player{
+			margin-top: 100px;
+			margin-left: 280px;
+			margin-right: 280px;
+			text-align:center;
+		}
+		.table{
+			width: 60%;
+			margin: 10px auto;
+		}
+	</style>
+
+</head>
+<body>
+	<div class="container-fluid">
+		<div id="player">
+
+			<input type="file" id="songs" style="display:none" multiple>
+			<button id="fileSelect" class="btn btn-outline-success">Upload Song</button>
+			<br>
+			<audio controls id="myAudio" autoplay></audio>
+			<p id="state" class="text-secondary">Enjoy Music !!</p>
+
+			<!-- carousel -->
+			<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+			  <ol id="indicator" class="carousel-indicators">
+			  </ol>
+			  <div id="carou" class="carousel-inner">
+			    </div>
+			  </div>
+			  <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+			    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+			    <span class="sr-only">Previous</span>
+			  </a>
+			  <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+			    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+			    <span class="sr-only">Next</span>
+			  </a>
+			</div>
+
+			<!-- <section class="player">
+			  <figure class="left_icon">    
+			    <div class="overlay">
+			      <div class="shadow"></div>
+			      
+			      <div class="btn">
+			        <div class="light"></div>
+			      </div>
+			      <div class="cord_container">
+			        <div class="cord"></div>
+			      </div>
+			      <div class="reader"></div>
+			    </div>
+			    
+			    <div class="lp_cont">
+			      <div class="lp"></div>
+			    </div>
+			  </figure>
+
+			  <section class="content">
+			    <h1>Wanted You More - <span class="author">Lady Antebellum</span></h1>
+			    
+			    <div class="slider">
+			      <div class="progress">
+			      </div>
+			    </div>
+			    
+			    <div class="btns">
+			      <a class="back icon-backward" href="#"></a>
+			      <a class="play icon-play" href="#"></a>
+			      <a class="forward icon-forward" href="#"></a>      
+			    </div>
+			  </section>
+			</section> -->
+
+
+			<!-- playlist -->
+			<table id="mtable" class="table table-hover">
+			  <thead class="table-dark">
+			    <tr>
+			      <th scope="col">#</th>
+			      <th scope="col">앨범</th>
+			      <th scope="col">제목</th>
+			      <th scope="col">가수</th>
+			      <th scope="col">장르</th>
+			      <th scope="col">발매일</th>
+			      <!-- <th scope="col">가사</th> -->
+			    </tr>
+			  </thead>
+			  <tbody id="mtbody">
+			  </tbody>
+			</table>
+
+		</div>
+	</div>
+	<script charset="utf-8">
+		const TITLE_LEN = 30;
+		var orders = [], titles = [];
+		var ID3 = window.jsmediatags;
+		const mutag = window.mutag;
+		var songs = document.getElementById("songs");
+		var myAudio = document.getElementById("myAudio");
+		var fileSelect = document.getElementById("fileSelect")
+
+		function shorten(str, len, ellipsis = '…') {
+			if (str.length <= len)
+				return str;
+			
+			var result = str.substr(0, len - 1);
+			result = result.substr(0, Math.min(result.length, result.lastIndexOf(" ")));
+
+			return result + ellipsis;
+		}
+
+		function createRow(contents){
+			var th = document.createElement("th");   
+			var tr = document.createElement("tr");
+			var img = document.createElement("img");
+			var tbody = document.getElementsByTagName("tbody")[0];   
+			var att = document.createAttribute("scope");       
+			att.value = "row"; 
+			img.src = contents[0];    
+			img.style.width = '50px';
+			img.style.height = '50px';                 
+			th.setAttributeNode(att);
+			th.appendChild(img);  
+			tr.appendChild(th);
+			for (var i = 1; i < contents.length; i++) {
+				var td = document.createElement("td");
+				td.textContent = contents[i];
+				tr.appendChild(td);
+			}
+			tbody.appendChild(tr);
+		}
+
+		function createCarousel(contents, cnt){
+			var carou = document.getElementById("carou");
+			var cImg = document.createElement("img");
+			var cDiv = document.createElement("div");
+			// var indicator = document.getElementById("indicator");
+			// var cLi = document.createElement("li");
+			var caption = document.createElement("div");
+			var cArtist = document.createElement("h5");
+			var cTitle = document.createElement("p");
+
+			caption.setAttribute("class", "carousel-caption d-none d-md-block");
+			cArtist.setAttribute("class", "font-weight-bold");
+			cTitle.setAttribute("class", "font-weight-bold");
+			cArtist.textContent = contents[3];
+			cTitle.textContent = contents[2];
+			caption.appendChild(cArtist);
+			caption.appendChild(cTitle);
+
+			// cLi.setAttribute("data-target", "#carouselExampleIndicators");
+
+			var cId = document.createAttribute("cId"); 
+			cId.value = cnt.toString();
+			cImg.setAttribute("class", "d-block w-100");
+			cImg.setAttribute("cId", cnt.toString())
+			cImg.setAttributeNode(cId);
+			cImg.src = contents[0]; 
+			// cImg.style.width = '100px';
+			// cImg.style.height = '600px';
+			
+			if(cnt==0){
+				cDiv.setAttribute("class", "carousel-item active");       
+			}else{
+				cDiv.setAttribute("class", "carousel-item"); 
+			}
+			cDiv.appendChild(caption);
+			cDiv.appendChild(cImg);   
+			carou.appendChild(cDiv);   
+
+			// indicator.appendChild(cLi);
+		}
+
+		function next(n){
+			guide_text = titles[n]+"  is playing...";
+			myAudio.setAttribute('src', urls[n]);
+			myAudio.play();
+			var state = document.getElementById("state");
+			state.textContent = guide_text;
+			console.log(guide_text);
+		}
+
+		var total=0, _next=0, files, len;
+		var cnt = 0, urls = [];
+
+		songs.addEventListener('change', function(){
+			files = this.files;
+			len = files.length;
+			total += len;
+
+			for (var i = 0; i < len; i++) {
+				// const가 비동기 이벤트 순서에 맞게 
+				// 자동으로 짝을 맞춰준다. 
+				// var 로 선언하면 이벤트는 가장 나중에 
+				// 실행되기 때문에 맨 마지막 파일만 출력된다.
+				
+				const file = files[i];
+		        const url = URL.createObjectURL(file);
+
+				ID3.read(file, {
+				  onSuccess: function(tag) {
+	
+					var album="", title=file.name;
+					var artist="", release = "", genre="";
+					var imageUrl="music3.jpg";
+
+					// set info.
+					if(tag.tags.picture){
+						//get cover image
+						var picture = tag.tags.picture; 
+						var base64String = "";
+						for (var i = 0; i < picture.data.length; i++) {
+						    base64String += String.fromCharCode(picture.data[i]);
+						}
+						imageUrl = "data:" + picture.format + ";base64," + window.btoa(base64String);
+					}
+				  	if(tag.tags.album)
+					  	album = tag.tags.album;
+					if(tag.tags.title)
+						title = tag.tags.title;
+					if(tag.tags.artist)
+						artist = tag.tags.artist;
+					if(tag.tags.genre)
+						genre = tag.tags.genre;
+					if(tag.tags.year)
+						release = tag.tags.year;
+
+					// console.log(tag);
+					// console.log(file);
+					// console.log("----------------------")
+
+					if(title.length > TITLE_LEN)
+						title = shorten(title, TITLE_LEN);
+					if(album.length > TITLE_LEN)
+						album = shorten(album, TITLE_LEN);
+					
+					urls.push(url);
+					titles.push(title);
+
+					 var contents = [
+					 	imageUrl,
+						album,
+						title,
+						artist,
+						genre,
+						release
+					];
+					createRow(contents);
+					createCarousel(contents, cnt);
+
+					// console.log(cnt);
+					cnt += 1;
+			
+				//   	console.log('---------------------------------------')
+				//   	console.log("앨범: "+album);
+				//   	console.log("제목: "+title);
+				//     console.log("가수: "+artist);
+				//     console.log("발매일: "+release);
+				//     // console.log("가사: "+tag.tags.lyrics.lyrics);
+				  },
+				  onError: function(error) {
+				  	console.log('fail!')
+				    console.log(':(', error.type, error.info);
+				  }
+				});
+			}
+			console.log("--- total songs: "+total+" ---")
+		});
+		// change music when playlist clicked
+		$("#mtable").on("click", "tr", function(e) {
+			var n = $(e.currentTarget).index();
+			next(n);
+		});
+		// set carousel speed
+		$('.carousel').carousel({
+		  interval: 2000
+		})
+		// change music when cover img clicked
+		$(document).on("click",".d-block", function () {
+		   var cId = $(this).attr('cId'); 
+		   next(cId);
+		   console.log('you clicked on Cover #' + cId);
+		});
+		// change music when music ended
+		myAudio.addEventListener("ended", function(){
+			console.log("ended !!")
+			_next = (_next + 1) % total;
+			next(_next);
+		})
+		// hide default file uploader
+		fileSelect.addEventListener("click", function (e) {
+		  if (songs) {
+		    songs.click();
+		  }
+		}, false);
+	</script>
+
+</body>
+</html>

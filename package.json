@@ -1,0 +1,32 @@
+{
+  "name": "server_side_javascript",
+  "version": "1.0.0",
+  "description": "server side javascript tutorials",
+  "main": "hello.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "start": "set HTTPS=true&&node scripts/start.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "connect-oriento": "^0.1.4",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "express-mysql-session": "^1.2.3",
+    "express-session": "^1.15.6",
+    "jade": "^1.11.0",
+    "md5": "^2.2.1",
+    "node-mysql": "^0.4.2",
+    "openssl-wrapper": "^0.3.4",
+    "orientjs": "^2.2.10",
+    "passport": "^0.4.0",
+    "passport-facebook": "^2.1.1",
+    "passport-local": "^1.0.0",
+    "pbkdf2-password": "^1.2.1",
+    "session-file-store": "^1.2.0",
+    "sha256": "^0.2.0",
+    "underscore": "^1.8.3"
+  }
+}

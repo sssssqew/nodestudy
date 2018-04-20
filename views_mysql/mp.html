@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Simple MP3 Player</title>
+		
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.0/jsmediatags.min.js"></script>
+	<script src="id3.min.js"></script>
+	<style>
+		.table{
+			width: 50%;
+			margin: 0 auto;
+		}
+	</style>
+</head>
+<body>
+	<input type="file" id="songs" multiple>
+	<audio controls id="myAudio" autoplay></audio>
+	<br><br>
+	<div id="container">
+		<table id="mtable" class="table table-dark table-hover">
+		  <thead>
+		    <tr>
+		      <th scope="col">#</th>
+		      <th scope="col">앨범</th>
+		      <th scope="col">제목</th>
+		      <th scope="col">가수</th>
+		      <th scope="col">발매일</th>
+		      <!-- <th scope="col">가사</th> -->
+		    </tr>
+		  </thead>
+		  <tbody id="mtbody">
+		  </tbody>
+		</table>
+	</div>
+	<script charset="utf-8">
+		var orders = [], titles = [];
+		var songs = document.getElementById("songs");
+		var myAudio = document.getElementById("myAudio");
+
+		function createRow(contents){
+			var th = document.createElement("th");   
+			var tr = document.createElement("tr");
+			var tbody = document.getElementsByTagName("tbody")[0];   
+			var att = document.createAttribute("scope");       
+			att.value = "row";                      
+			th.setAttributeNode(att);  
+			tr.appendChild(th);
+			for (var i = 0; i < contents.length; i++) {
+				var td = document.createElement("td");
+				td.textContent = contents[i];
+				tr.appendChild(td);
+			}
+			tbody.appendChild(tr);
+		}
+
+		function next(n){
+			var url = URL.createObjectURL(orders[n]);
+			myAudio.setAttribute('src', url);
+			myAudio.play();
+			console.log(titles[n]+" is playing...");
+		}
+
+		var total=0, _next=0, files, len;
+		var cnt = 0;
+
+		songs.addEventListener('change', function(){
+			files = songs.files;
+			len = files.length;
+			total += len;
+
+			for (var i = 0; i < len; i++) {
+				var url = URL.createObjectURL(files[i]);
+				ID3.loadTags(files[i], function() {
+			    var tags = ID3.getAllTags(files[i]);
+			    console.log(tags.artist + " - " + tags.title + ", " + tags.album);
+});
+			}
+
+			// 	ID3.read(files[i], {
+			// 	  onSuccess: function(tag) {
+			// 	  	tag.order = cnt;
+			// 	  	orders.push(tag);
+			// 		var album="", title="";
+			// 		var artist="", release = "";
+
+			// 	  	if(tag.tags.album)
+			// 		  	album = tag.tags.album;
+			// 		if(tag.tags.title)
+			// 			title = tag.tags.title;
+			// 		if(tag.tags.artist)
+			// 			artist = tag.tags.artist;
+			// 		if(tag.tags.year)
+			// 			release = tag.tags.year;
+
+			// 		titles.push(title);
+
+			// 		 var contents = [
+			// 			album,
+			// 			title,
+			// 			artist,
+			// 			release
+			// 		];
+			// 		createRow(contents);
+
+			// 		cnt += 1;
+			
+			// 	  	// console.log('---------------------------------------')
+			// 	  	// console.log("앨범: "+album);
+			// 	  	// console.log("제목: "+title);
+			// 	    // console.log("가수: "+artist);
+			// 	    // console.log("발매일: "+release);
+			// 	    // console.log("가사: "+tag.tags.lyrics.lyrics);
+			// 	  },
+			// 	  onError: function(error) {
+			// 	  	console.log('fail!')
+			// 	    console.log(':(', error.type, error.info);
+			// 	  }
+			// 	});
+			// }
+			// console.log("--- total songs: "+total+" ---")
+		});
+		myAudio.addEventListener("ended", function(){
+			_next = (_next + 1) % total;
+			next(_next);
+		})
+		$("#mtable").on("click", "tr", function(e) {
+			var n = $(e.currentTarget).index();
+			console.log(orders[n]);
+			// next(n);
+		    // console.log($(e.currentTarget).index());
+		});
+	</script>
+</body>
+</html>
