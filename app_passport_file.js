@@ -1,3 +1,5 @@
+const certpass = process.env.certpass;
+
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
@@ -229,7 +231,7 @@ var options = {
 	ca: fs.readFileSync('ssl/ca-chain.cert.pem'),
     key: fs.readFileSync('ssl/www.example.com.key.pem'), 
     cert: fs.readFileSync('ssl/www.example.com.cert.pem'), 
-    passphrase: 'rkrrlska'
+    passphrase: certpass
 }; 
 
 https.createServer(options, app).listen(443, () => {
