@@ -1,4 +1,5 @@
-const certpass = process.env.certpass;
+require('dotenv').config()
+var CERTPASS = process.env.CERTPASS;
 
 var express = require('express');
 var session = require('express-session');
@@ -114,8 +115,8 @@ passport.use(new LocalStrategy(
 	}
 ));
 passport.use(new FacebookStrategy({
-    clientID: '256113564427662',
-    clientSecret: '13f1cb366a91c2e44135bce7ae53c5d1',
+    clientID: process.env.clientID,
+    clientSecret: process.env.clientSecret,
     callbackURL: "/auth/facebook/callback",
     profileFields: ['id', 'email', 'gender', 'link', 'locale',
     	'name', 'timezone', 'updated_time', 'verified', 'displayName']
@@ -231,7 +232,7 @@ var options = {
 	ca: fs.readFileSync('ssl/ca-chain.cert.pem'),
     key: fs.readFileSync('ssl/www.example.com.key.pem'), 
     cert: fs.readFileSync('ssl/www.example.com.cert.pem'), 
-    passphrase: certpass
+    passphrase: CERTPASS
 }; 
 
 https.createServer(options, app).listen(443, () => {
